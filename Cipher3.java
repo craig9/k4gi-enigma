@@ -13,9 +13,8 @@ import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import java.util.Hashtable;
 
-
-
 public class Cipher3 extends JFrame {
+
     boolean debugging = true;
     
     public Cipher3() {
@@ -29,23 +28,22 @@ public class Cipher3 extends JFrame {
     private void debug(String in) {
         if(debugging) System.out.println(in);
     }
-    
-    private String enigmaCipher(String in, String in_wheel1, int in_start1, String in_wheel2, int in_start2, String in_wheel3, int in_start3, String in_reflect, String plugboard) {
+   
+
+    // in_wheel1, 2 and 3 tell us which of the wheels to use in each of the three slots.
+    // in_start1, 2 and 3 tell us what their settings should be.
+ 
+    private String enigmaCipher(String in, String in_wheel1, int in_start1, 
+                                           String in_wheel2, int in_start2, 
+                                           String in_wheel3, int in_start3, 
+                                           String in_reflect, String plugboard) {
+
         debug("==========STARTING enigmaCipher()==========");
         in = in.toUpperCase();
         String out = "";
         String keyboard = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         //String plugboard = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //default! not messing with this rn
         
-        /*
-            Gotta say a little bit about the stepping mechanism.
-            Rotors I-V  have one step, rotors VI-VIII have two.
-            The thing is they're written down as the place on the entry character
-            so I guess I do need to keep track of both after all
-            come to think of it why did I think I didn't? Of course I need to know where its turned to!
-            Anyway. Yes.
-            I'm just going to write them down right now as A-B, meaning when A clicks to B
-        */
         String[] wheel_i = { // Q-R
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
@@ -78,49 +76,12 @@ public class Cipher3 extends JFrame {
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             "FKQHTLXOCBJSPDZRAMEWNIUYGV",
             "AN"};
-        //reflectors don't turn so i guess i can just compare them to the keyboard  
+
+        // Reflectors don't turn so we just compare them to the keyboard  
         String reflector_b = "YRUHQSLDPXNGOKMIEBFZCWVJAT";
         String reflector_c = "FVPJIAOYEDRZXWGCTKUQSBNMHL";
-        // these wheels copied from http://users.telenet.be/d.rijmenants/en/enigmatech.htm
         
-        /*
-            Here is a video of a paper enigma machine in action.
-            https://www.youtube.com/watch?v=pZsuxZXN33g
-            Notice that the wheels, rotors, whatever, move BEFORE encoding the letter typed!
-            
-            The Enigma machine works by sending an electrical signal...
-            From the keyboard, to the plugboard, to a static wheel that connects to the moving wheels...
-            From there to wheel III, to wheel II, to wheel I, to the reflector, then back again...
-            Wheel I, II, III, static wheel, plugboard, then the lampboard. Result!
-            Oh right and in some versions there are four wheels!
-            
-            ugh i'm going to write that out again.
-            1. Input character
-            2. Shift rotors (or wheels) (do i have to pick one?)
-            3. Plugboard
-            4. Wheel III
-            5. Wheel II
-            6. Wheel I
-            7. Reflector
-            8. Wheel I
-            9. Wheel II
-            10. Wheel III
-            11. Plugboard
-            12. Output character!!!!!!!
-            
-            Wheel specs are (apparently) recorded here:
-            https://en.wikipedia.org/wiki/Enigma_rotor_details
-            http://users.telenet.be/d.rijmenants/en/enigmatech.htm
-            https://www.codesandciphers.org.uk/enigma/rotorspec.htm
-            The wikipedia page has more rotors than the others
-        */
-        
-        //I'm realising that I should have written more comments in the other Cipher files...
-        //I don't know what's happening! I need to read it carefully...again!
-        
-        //I'm just going to go for it
-        
-        //Step 1: get input (that's already done yep)
+        // Step 1: get and display input (parameters passed to function)
         debug("Input: " + in);
         debug("Slot 1: " + in_wheel1);
         debug("Setting 1: " + in_start1);
@@ -128,35 +89,22 @@ public class Cipher3 extends JFrame {
         debug("Setting 2: " + in_start2);
         debug("Slot 3: " + in_wheel3);
         debug("Setting 3: " + in_start3);
-        // It's March 15 and I've just got some settings passing through to this function.
-        // It's time to make them actually set some things.
-        // I've got Strings to tell me which wheels to use in each of the three slots,
-        // And I've got ints to tell me what their settings should be.
-        // Hey, are the roll-over points still hard-coded just down there?
-        // No it looks like I've dealt with that already.
 
-
-        //Step 2: shift rotorwheel III, this code from Cipher2.java, line 58 is what I need...
-        //wheel_2 = wheel_2.substring(1, wheel_2.length()) + wheel_2.charAt(0);
-        //oh I need like 'working directory' wheels
-        //String[] working_wheel_i = wheel_i;
-        //String[] working_wheel_ii = wheel_ii;
-        //String[] working_wheel_iii = wheel_iii; //the numbers, match, yes, just because
+        // Step 2: shift rotorwheel III
+        // temporary 'working directory' wheels
+        // String[] working_wheel_i = wheel_i;
+        // String[] working_wheel_ii = wheel_ii;
+        // String[] working_wheel_iii = wheel_iii; //the numbers, match, yes, just because
         String[] working_wheel_i;
         String[] working_wheel_ii;
         String[] working_wheel_iii;
         String working_reflector;
         /*
-            There's a bug right now to do with these wheel...
-            uh I had the word just now, declarations or something
-            but anyway if two or more working_wheels are the same wheel,
-            then when one gets turned, they all do.
-            I could just stop the same wheel being selected twice,
-            since thats not something you do with an enigma machine,
-            you only have one copy of each wheel.
-            But it'd be better to sort out this problem instead I think.
+        Fixed bug:
 
-            OK fixed :)
+        It was previously possible to select the same wheel more than once,
+        resulting in two or more wheels being turned at the same time. Not
+        possible on a real machine beause there is only one copy of each wheel. 
         */
         switch(in_wheel1) {
             case "Wheel I" :
